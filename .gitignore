@@ -1,4 +1,6 @@
 .classpath
+.settings
+.git
 .project
-.settings/
-bin
+target/
+/.metadata/

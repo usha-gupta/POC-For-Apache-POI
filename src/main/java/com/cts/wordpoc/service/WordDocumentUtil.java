@@ -91,8 +91,5 @@ public class WordDocumentUtil {
 		this.policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT, parsFooter);
 	}
 
-		
-	
-	
 
 }
