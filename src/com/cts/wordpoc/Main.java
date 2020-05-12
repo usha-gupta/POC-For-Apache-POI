@@ -9,35 +9,26 @@ import com.cts.wordpoc.service.WordDocumentUtil;
 
 public class Main {
 
-	public static void main(String[] args) throws IOException, XmlException {
+	public static void main(String[] args)  {
 		// TODO Auto-generated method stub
 		
-		System.out.println("start");
-		 
-		
 		WordDocumentUtil wordUtil = new WordDocumentUtil(); 
-		XWPFDocument doc = wordUtil.create(); 
-		
-		wordUtil.addTitle("My Title", 16, ParagraphAlignment.CENTER); 
-		wordUtil.addParagraph("This is my default size paragraph"); 
-		wordUtil.addParagraph("This is my large font size paragraph", 14);
-		
-		
 		try {
+			XWPFDocument doc = wordUtil.create();
+			wordUtil.addTitle("My Title", 16, ParagraphAlignment.CENTER); 
+			wordUtil.addParagraph("This is my default size paragraph"); 
+			wordUtil.addParagraph("This is my large font size paragraph", 14);
+			
+			LocalDate currentDate=LocalDate.now();
 			wordUtil.addHeader("This is my header....");
 			wordUtil.addFooter("This is my footer");
-		} 
-		catch (IOException e) {
+			wordUtil.save("my_test_doc_"+currentDate);
+		}
+		catch (IOException | XmlException e) {
 			e.printStackTrace();
 		} 
 		
 		
-		 LocalDate currentDate=LocalDate.now();
-		 wordUtil.save("my_test_doc_"+currentDate);
-		
-		 System.out.println("end");
-
-
 	}
 
 }
