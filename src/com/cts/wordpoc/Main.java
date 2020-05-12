@@ -18,27 +18,22 @@ public class Main {
 		WordDocumentUtil wordUtil = new WordDocumentUtil(); 
 		XWPFDocument doc = wordUtil.create(); 
 		
-		wordUtil.addTitle("My Title shanu", 16, ParagraphAlignment.CENTER); 
+		wordUtil.addTitle("My Title", 16, ParagraphAlignment.CENTER); 
 		wordUtil.addParagraph("This is my default size paragraph"); 
 		wordUtil.addParagraph("This is my large font size paragraph", 14);
 		
 		
 		try {
-			wordUtil.addHeader("This is my header");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		try {
+			wordUtil.addHeader("This is my header....");
 			wordUtil.addFooter("This is my footer");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} 
+		catch (IOException e) {
 			e.printStackTrace();
 		} 
 		
 		
-		 LocalDate date=LocalDate.now();
-		 wordUtil.save("my_test_doc_"+date);
+		 LocalDate currentDate=LocalDate.now();
+		 wordUtil.save("my_test_doc_"+currentDate);
 		
 		 System.out.println("end");
 

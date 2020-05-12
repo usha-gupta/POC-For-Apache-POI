@@ -48,8 +48,7 @@ public class WordDocumentUtil {
 			addTitle.setText(title);
 			addTitle.setFontSize(fontSize);
 			addTitle.setBold(true);
-			addTitle = paragraphTitle.createRun();
-			
+						
 		}
 		
 		
