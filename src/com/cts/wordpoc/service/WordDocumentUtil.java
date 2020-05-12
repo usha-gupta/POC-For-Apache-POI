@@ -47,8 +47,7 @@ public class WordDocumentUtil {
 			paragraphTitle.setAlignment(alignment);	  
 			addTitle.setText(title);
 			addTitle.setFontSize(fontSize);
-			addTitle.setBold(true);
-						
+			addTitle.setBold(true);		
 		}
 		
 		
@@ -61,7 +60,6 @@ public class WordDocumentUtil {
 			XWPFRun addDescription = bodyParagraph.createRun();
 			addDescription.setFontSize(fontSize);
 			addDescription.setText(content);
-			
 		}
 		
 		 public void addParagraph(String content) {
