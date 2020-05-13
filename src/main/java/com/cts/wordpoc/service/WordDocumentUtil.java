@@ -97,50 +97,33 @@ public class WordDocumentUtil {
 
 
 	public XWPFTable addTable(String[] headers, String headerColor){
+		// Create a Simple Table using the document.
+		XWPFTable table = this.document.createTable();		
+		XWPFTableRow tableRow0 = table.getRow(0);
+		XWPFTableCell tableCell;	
 		
-			// Create a Simple Table using the document.
-			XWPFTable table = this.document.createTable();
-			table.setCellMargins(10, 50, 100, 50);
-			//table.setWidth(10);
-			
-			XWPFTableRow tableRow0 = table.getRow(0);
+		int i=0;
 		
-			XWPFTableCell tableCell0 = tableRow0.getCell(0);
-			tableCell0.setColor(headerColor);
-			
-			
-			//XWPFParagraph tableContent = this.document.createParagraph();
-			XWPFParagraph tableContent = tableCell0.addParagraph();
+		while(i< headers.length) {
+			if (i == 0) {
+			    tableCell = tableRow0.getCell(0);
+			}
+			else {
+			    tableCell = tableRow0.addNewTableCell();
+			}
+			XWPFParagraph tableContent = tableCell.addParagraph();
 			tableContent.setAlignment(ParagraphAlignment.CENTER);
+			tableCell.setVerticalAlignment(XWPFVertAlign.CENTER);
 			XWPFRun addContent = tableContent.createRun();
 			addContent.setColor("ffffff");
+			addContent.setText(headers[i]);
 			addContent.isBold();
-			addContent.setText(headers[0]);
-			
-			// Creating the First Cell
-			tableCell0.setVerticalAlignment(XWPFVertAlign.CENTER);
-			//tableCell0.setParagraph(tableContent);
-			
-			int i=1;
-			
-			while(i< headers.length) {
-				XWPFTableCell tableCell = tableRow0.addNewTableCell();
-				XWPFParagraph tableContent1 = tableCell.addParagraph();
-				tableContent1.setAlignment(ParagraphAlignment.CENTER);
-				XWPFRun addContent1 = tableContent1.createRun();
-				addContent1.setColor("ffffff");
-				addContent1.setText(headers[i]);
-				addContent1.isBold();
-				
-				
-				
-				tableCell.setColor(headerColor);
-				tableCell.setVerticalAlignment(XWPFVertAlign.CENTER);
-				//tableCell.setText(headers[i]);
-				//tableCell.setParagraph(tableContent1);
-				i++;
-			}
-			return table;
+			tableCell.setColor(headerColor);
+			tableCell.setVerticalAlignment(XWPFVertAlign.CENTER);
+			i++;
+		}
+		
+		return table;
  
 	}
 	
