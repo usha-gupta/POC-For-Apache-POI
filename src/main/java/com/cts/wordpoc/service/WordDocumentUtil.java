@@ -9,6 +9,10 @@ import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell.XWPFVertAlign;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.apache.xmlbeans.XmlException;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
@@ -20,7 +24,7 @@ public class WordDocumentUtil {
 	
 	private XWPFDocument document; 
 	private XWPFHeaderFooterPolicy policy; 
-		
+	FileOutputStream fileOutputStream = null;
 		
 	public XWPFDocument create() throws IOException, XmlException { 
 		//Create document
@@ -89,6 +93,75 @@ public class WordDocumentUtil {
 		XWPFParagraph[] parsFooter = new XWPFParagraph[1];
 		parsFooter[0] = footerParagraph;
 		this.policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT, parsFooter);
+	}
+
+
+	public XWPFTable addTable(String[] headers, String headerColor){
+		
+			// Create a Simple Table using the document.
+			XWPFTable table = this.document.createTable();
+			table.setCellMargins(10, 50, 100, 50);
+			//table.setWidth(10);
+			
+			XWPFTableRow tableRow0 = table.getRow(0);
+		
+			XWPFTableCell tableCell0 = tableRow0.getCell(0);
+			tableCell0.setColor(headerColor);
+			
+			
+			//XWPFParagraph tableContent = this.document.createParagraph();
+			XWPFParagraph tableContent = tableCell0.addParagraph();
+			tableContent.setAlignment(ParagraphAlignment.CENTER);
+			XWPFRun addContent = tableContent.createRun();
+			addContent.setColor("ffffff");
+			addContent.isBold();
+			addContent.setText(headers[0]);
+			
+			// Creating the First Cell
+			tableCell0.setVerticalAlignment(XWPFVertAlign.CENTER);
+			//tableCell0.setParagraph(tableContent);
+			
+			int i=1;
+			
+			while(i< headers.length) {
+				XWPFTableCell tableCell = tableRow0.addNewTableCell();
+				XWPFParagraph tableContent1 = tableCell.addParagraph();
+				tableContent1.setAlignment(ParagraphAlignment.CENTER);
+				XWPFRun addContent1 = tableContent1.createRun();
+				addContent1.setColor("ffffff");
+				addContent1.setText(headers[i]);
+				addContent1.isBold();
+				
+				
+				
+				tableCell.setColor(headerColor);
+				tableCell.setVerticalAlignment(XWPFVertAlign.CENTER);
+				//tableCell.setText(headers[i]);
+				//tableCell.setParagraph(tableContent1);
+				i++;
+			}
+			return table;
+ 
+	}
+	
+	
+	public void addRows(XWPFTable table, String[][] tableData, String oddRowColor, String evenRowColor) {
+		
+		for(int i=0;i<tableData.length;i++) {
+			XWPFTableRow tableRow = table.createRow();
+			
+			for(int j=0;j<tableData[0].length;j++) {
+				tableRow.getCell(j).setText(tableData[i][j]);
+				tableRow.getCell(j).setVerticalAlignment(XWPFVertAlign.CENTER);
+				if(i%2==0)
+					tableRow.getCell(j).setColor(oddRowColor);
+				else
+					tableRow.getCell(j).setColor(evenRowColor);			
+								
+			}
+			
+		}
+
 	}
 
 
