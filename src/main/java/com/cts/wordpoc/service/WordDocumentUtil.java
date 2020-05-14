@@ -143,7 +143,7 @@ public class WordDocumentUtil {
 					tableRow.getCell(j).setColor(evenRowColor);	
 			
 				if(i==1 && j==2) {
-					String[][] tableData1 = {{"Amit Gautam",  "Releases Manager"}, {"RadheKrishna Nalabothu", "Camera SME"}, {"Narendra Suraj", "project manager"}};
+					String[][] tableData1 = {{"1",  "2"}, {"3", "4"}, {"5", "6"}};
 					XWPFTableCell meraCell =table.getRow(i).getCell(j);
 					addNestedTable(meraCell,tableData1);	
 				 }
@@ -182,18 +182,18 @@ public class WordDocumentUtil {
 					if(j==0) {
 						innerTableRow= innerTable.getRow(0);
 						XWPFTableCell innerTableCell0=innerTableRow.getCell(0);
-						innerTableCell0.setText("data 0");
+						innerTableCell0.setText(tableData[i][j]);
 					}
 					else {
 						XWPFTableCell innerTableCell1=innerTableRow.addNewTableCell();
-						innerTableCell1.setText("data 1");			
+						innerTableCell1.setText(tableData[i][j]);			
 					}
 				}
 				else {
 					XWPFTableCell innerTableCell10=innerTableRow.getCell(0);
-					innerTableCell10.setText("data 0");
+					innerTableCell10.setText(tableData[i][j]);
 					XWPFTableCell innerTableCell11=innerTableRow.getCell(1);
-					innerTableCell11.setText("data 1");
+					innerTableCell11.setText(tableData[i][j]);
 					}
 			}
 		
