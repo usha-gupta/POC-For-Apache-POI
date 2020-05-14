@@ -50,23 +50,22 @@ public class WordDocumentUtil {
 	public void addTitle(String title, int fontSize, ParagraphAlignment alignment) {
 		//for Title
 		XWPFParagraph paragraphTitle = this.document.createParagraph();
-		XWPFRun addTitle = paragraphTitle.createRun();
+		XWPFRun titleRun = paragraphTitle.createRun();
 		paragraphTitle.setAlignment(alignment);	  
-		addTitle.setText(title);
-		addTitle.setFontSize(fontSize);
-		addTitle.setBold(true);		
+		titleRun.setText(title);
+		titleRun.setFontSize(fontSize);
+		titleRun.setBold(true);		
 	}
 		
 		
-	public void addParagraph(String content, int fontSize) {
-			
+	public void addParagraph(String content, int fontSize) {			
 		//write body content
 		//titlePoint.addBreak();  //for line break
-		XWPFParagraph bodyParagraph = this.document.createParagraph();
-		bodyParagraph.setAlignment(ParagraphAlignment.BOTH);
-		XWPFRun addDescription = bodyParagraph.createRun();
-		addDescription.setFontSize(fontSize);
-		addDescription.setText(content);
+		XWPFParagraph paragraphContent = this.document.createParagraph();
+		paragraphContent.setAlignment(ParagraphAlignment.BOTH);
+		XWPFRun paragraphRun = paragraphContent.createRun();
+		paragraphRun.setFontSize(fontSize);
+		paragraphRun.setText(content);
 	}
 		
 	public void addParagraph(String content) {
@@ -103,28 +102,26 @@ public class WordDocumentUtil {
 	public XWPFTable addTable(String[] headers, String headerColor){
 		// Create a Simple Table using the document.
 		XWPFTable table = this.document.createTable();		
-		XWPFTableRow tableRow0 = table.getRow(0);
-		XWPFTableCell tableCell;	
-		//table.getCTTbl().getTblPr().unsetTblBorders();
-		int i=0;
-		
-		while(i< headers.length) {
+		XWPFTableRow headerRow = table.getRow(0);
+		XWPFTableCell headerCell;	
+		table.getCTTbl().getTblPr().unsetTblBorders();
+		table.setCellMargins(50, 100, 50, 100);
+		for(int i=0;i< headers.length;i++) {
 			if (i == 0) {
-			    tableCell = tableRow0.getCell(0);
+				headerCell = headerRow.getCell(0);
 			}
 			else {
-			    tableCell = tableRow0.addNewTableCell();
+				headerCell = headerRow.addNewTableCell();
 			}
-			XWPFParagraph tableContent = tableCell.addParagraph();
-			tableContent.setAlignment(ParagraphAlignment.CENTER);
-			tableCell.setVerticalAlignment(XWPFVertAlign.CENTER);
-			XWPFRun addContent = tableContent.createRun();
-			addContent.setColor("ffffff");
-			addContent.setText(headers[i]);
-			addContent.isBold();
-			tableCell.setColor(headerColor);
-			tableCell.setVerticalAlignment(XWPFVertAlign.CENTER);			
-			i++;			
+			XWPFParagraph headerContent = headerCell.addParagraph();
+			headerContent.setAlignment(ParagraphAlignment.CENTER);
+			headerCell.setVerticalAlignment(XWPFVertAlign.CENTER);
+			XWPFRun headerContentRun  = headerContent.createRun();
+			headerContentRun .setColor("ffffff");
+			headerContentRun .setText(headers[i]);
+			headerContentRun .isBold();
+			headerCell.setColor(headerColor);
+			headerCell.setVerticalAlignment(XWPFVertAlign.CENTER);						
 		}		
 		return table;
 	}
@@ -141,64 +138,41 @@ public class WordDocumentUtil {
 					tableRow.getCell(j).setColor(oddRowColor);
 				else
 					tableRow.getCell(j).setColor(evenRowColor);	
-			
-				if(i==1 && j==2) {
-					String[][] tableData1 = {{"1",  "2"}, {"3", "4"}, {"5", "6"}};
-					XWPFTableCell meraCell =table.getRow(i).getCell(j);
-					addNestedTable(meraCell,tableData1);	
-				 }
-			}	
+		    }	
 		}
 	}
 	
 	
-	
-	
 	public void addNestedTable(XWPFTableCell cell,String[][] tableData) {
 		
-		
-		XWPFTableCell tableCell= cell.getTableRow().getCell(0);
-		CTTbl  ctTbl = cell.getTableRow().getCell(0).getCTTc().addNewTbl();
-		ctTbl=tableCell.getCTTc().addNewTbl();
-		//tableCell.removeParagraph(0);
-		tableCell.getCTTc().addNewP();
-		
-		
-		
-		XWPFTable innerTable= new XWPFTable(ctTbl, tableCell);
-		//innerTable.getCTTbl().getTblPr().unsetTblBorders();		
-		
-		
-		
+		CTTbl ctTbl = cell.getCTTc().addNewTbl();
+		ctTbl = cell.getCTTc().addNewTbl();
+		CTTblPr tblPr = ctTbl.addNewTblPr();
+		cell.removeParagraph(0);
+		cell.getCTTc().addNewP();				
+		XWPFTable innerTable= new XWPFTable(ctTbl,cell);
+		//innerTable.getCTTbl().getTblPr().unsetTblBorders();
+		innerTable.setCellMargins(50, 50, 50, 50);
 		XWPFTableRow innerTableRow=null;
+		XWPFTableCell innerTableColum=null;
 		
 		for(int i=0; i<tableData.length;i++){
-			if(i!=0) {
-			innerTableRow= innerTable.createRow();
-			 }
+            if (i==0) {
+                 innerTableRow = innerTable.getRow(0);
+            }
+             else {
+                  innerTableRow = innerTable.createRow(); 
+            }
 			for(int j=0;j<tableData[0].length;j++) {			
-				if(i==0)
-				{
-					if(j==0) {
-						innerTableRow= innerTable.getRow(0);
-						XWPFTableCell innerTableCell0=innerTableRow.getCell(0);
-						innerTableCell0.setText(tableData[i][j]);
-					}
-					else {
-						XWPFTableCell innerTableCell1=innerTableRow.addNewTableCell();
-						innerTableCell1.setText(tableData[i][j]);			
-					}
-				}
+				if ((i==0 && j==0) || (i != 0)) {
+					innerTableColum = innerTableRow.getCell(j);
+			     }
 				else {
-					XWPFTableCell innerTableCell10=innerTableRow.getCell(0);
-					innerTableCell10.setText(tableData[i][j]);
-					XWPFTableCell innerTableCell11=innerTableRow.getCell(1);
-					innerTableCell11.setText(tableData[i][j]);
-					}
+					innerTableColum =innerTableRow.addNewTableCell();		
+				}
+				innerTableColum.setText(tableData[i][j]);
 			}
-		
-		}
-		
+		}		
 	}
 	
 }
