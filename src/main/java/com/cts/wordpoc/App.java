@@ -19,8 +19,8 @@ public class App
     public static void main( String[] args )
     {
         System.out.println( "Hello World!" );
-        String[] tableHeaders= {"Name", "Roll", "Company"};
-        String[][] tableData = { {"Hardware Kent", "Senior Network Architect", "NRT"}, {"Alex Adshead", "Senior Network Supporting Engineer", "NRT"}, {"Amit Gautam",  "Releases Manager", "Cognizant "}, {"RadheKrishna Nalabothu", "Camera SME", "Cognizant"}, {"Narendra Suraj", "project manager", "Cognizant"}};
+        String[] tableHeaders= {"Name", "Roll", "Company","Position"};
+        String[][] tableData = { {"Hardware Kent", "Senior Network Architect", "NRT","Manager"}, {"Alex Adshead", "Senior Network Supporting Engineer", "NRT","Manager"}, {"Amit Gautam",  "Releases Manager", "Cognizant ","Manager"}, {"RadheKrishna Nalabothu", "Camera SME", "Cognizant","Manager"}, {"Narendra Suraj", "project manager", "Cognizant","Manager"}};
 		
         
         WordDocumentUtil wordUtil = new WordDocumentUtil(); 
@@ -32,8 +32,8 @@ public class App
 				wordUtil.addParagraph("This is my large font size paragraph", 14);
 				
 				LocalDate currentDate=LocalDate.now();
-				wordUtil.addHeader("This is my header....");
-				wordUtil.addFooter("This is my footer");
+//				wordUtil.addHeader("This is my header....");
+//				wordUtil.addFooter("This is my footer");
 				XWPFTable table= wordUtil.addTable(tableHeaders, "4d82be");
 				wordUtil.addRows(table, tableData, "dbe5f1", "feffff");
 				wordUtil.save("my_test_doc_"+currentDate);
@@ -45,8 +45,6 @@ public class App
 				catch (XmlException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} 
-			
-			
+			} 	
     }
 }
