@@ -20,13 +20,12 @@ public class App
     public static void main( String[] args )
     {
         System.out.println( "Hello World!" );
-        String[] tableHeaders= {"Name", "Role", "Company","Position"};
+        String[] tableHeaders = {"Name", "Role", "Company","Position"};
         String[][] tableData = { {"Hardware Kent", "Senior Network Architect", "NRT","Manager"}, 
-        								{"Alex Adshead", "Senior Network Supporting Engineer", "NRT","Manager"}, 
+        								{"Alex Adshead", "Senior Network Supporting Engineer", "","Manager"}, 
         								{"Amit Gautam",  "Releases Manager", "Cognizant ","Manager"}, 
-        								{"RadheKrishna Nalabothu", "Camera SME", "Cognizant","Manager"}, 
         								{"Narendra Suraj", "project manager", "Cognizant","Manager"}};
-        String[][] innerTableData = {{"Name",  "Score"}, {"Cognizant", "100"}, {"NRT", "99"},{"Cognizant", "100"}, {"NRT", "99"}};
+        String[][] innerTableData = {{"Cognizant", "100"}, {"NRT", "100"},{"Cognizant", "100"}, {"NRT", "100"},{"Cognizant", "100"}};
         
         WordDocumentUtil wordUtil = new WordDocumentUtil(); 
 		
@@ -38,11 +37,11 @@ public class App
 				LocalDate currentDate = LocalDate.now();
 //				wordUtil.addHeader("This is my header....");
 //				wordUtil.addFooter("This is my footer");				
-				XWPFTable table= wordUtil.addTable(tableHeaders, "4d82be");
+				XWPFTable table = wordUtil.addTable(tableHeaders, "4d82be");
 				wordUtil.addRows(table, tableData, "dbe5f1", "feffff");
-				XWPFTableCell innerCell=table.getRow(2).getCell(2); 
+				XWPFTableCell innerCell = table.getRow(2).getCell(2); 
 				wordUtil.addNestedTable(innerCell,innerTableData);				
-				wordUtil.save("my_test_doc_"+currentDate);
+				wordUtil.save("my_test_doc_" + currentDate);
 				
 			} catch (IOException e ) {
 				e.printStackTrace();
