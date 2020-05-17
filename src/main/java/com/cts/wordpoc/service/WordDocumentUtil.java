@@ -3,25 +3,52 @@ package com.cts.wordpoc.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+
+import org.apache.poi.ss.usermodel.HeaderFooter;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.TOC;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFStyle;
+import org.apache.poi.xwpf.usermodel.XWPFStyles;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell.XWPFVertAlign;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.apache.xmlbeans.XmlException;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBorder;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDecimalNumber;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTOnOff;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageBorders;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSdtBlock;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSimpleField;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTString;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTStyle;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTbl;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTcBorders;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTText;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STBorder;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STOnOff;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageBorderOffset;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STStyleType;
+
+import com.microsoft.schemas.office.visio.x2012.main.HeaderFooterType;
 
 public class WordDocumentUtil {
 	
@@ -35,6 +62,8 @@ public class WordDocumentUtil {
 		this.document = new XWPFDocument(); 		
 		CTSectPr sectPr = this.document.getDocument().getBody().addNewSectPr();
 		this.policy = new XWPFHeaderFooterPolicy(this.document, sectPr);
+		this.document.getBodyElements();
+		createTOC("Table Of Contents");		
 		return this.document;
 	}
 	
@@ -47,14 +76,18 @@ public class WordDocumentUtil {
 	}
 		
 		
-	public void addTitle(String title, int fontSize, ParagraphAlignment alignment) {
+	public void addTitle(String title, int fontSize, ParagraphAlignment alignment, String styleId) {
 		//for Title
 		XWPFParagraph paragraphTitle = this.document.createParagraph();
+		paragraphTitle.setPageBreak(true);
 		XWPFRun titleRun = paragraphTitle.createRun();
 		paragraphTitle.setAlignment(alignment);	  
+		//paragraphTitle.getCTP().addNewFldSimple().setInstr("PAGE \\* ARABIC MERGEFORMAT");
 		titleRun.setText(title);
 		titleRun.setFontSize(fontSize);
 		titleRun.setBold(true);		
+		paragraphTitle.setStyle(styleId);
+		
 	}
 		
 		
@@ -66,6 +99,7 @@ public class WordDocumentUtil {
 		XWPFRun paragraphRun = paragraphContent.createRun();
 		paragraphRun.setFontSize(fontSize);
 		paragraphRun.setText(content);
+		
 	}
 		
 	public void addParagraph(String content) {
@@ -95,7 +129,8 @@ public class WordDocumentUtil {
 		XWPFParagraph footerParagraph = new XWPFParagraph(ctpFooter, this.document);
 		XWPFParagraph[] parsFooter = new XWPFParagraph[1];
 		parsFooter[0] = footerParagraph;
-		this.policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT, parsFooter);
+		this.policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT, parsFooter);	
+		
 	}
 
 
@@ -169,4 +204,89 @@ public class WordDocumentUtil {
 			}
 		}		
 	}
+
+	public void pageBorder() {
+		 CTDocument1 ctDocument = this.document.getDocument();
+		  CTBody ctBody = ctDocument.getBody();
+		  CTSectPr ctSectPr = (ctBody.isSetSectPr())?ctBody.getSectPr():ctBody.addNewSectPr();
+		  CTPageSz ctPageSz = (ctSectPr.isSetPgSz())?ctSectPr.getPgSz():ctSectPr.addNewPgSz();
+		  //paper size letter
+		  ctPageSz.setW(java.math.BigInteger.valueOf(Math.round(8.5 * 1440))); //8.5 inches
+		  ctPageSz.setH(java.math.BigInteger.valueOf(Math.round(11 * 1440))); //11 inches
+		  
+		  //page borders
+		  CTPageBorders ctPageBorders = (ctSectPr.isSetPgBorders())?ctSectPr.getPgBorders():ctSectPr.addNewPgBorders();
+		 // ctPageBorders.setOffsetFrom(STPageBorderOffset.PAGE);
+		  
+		  for (int b = 0; b < 4; b++) {
+		   CTBorder ctBorder = (ctPageBorders.isSetTop())?ctPageBorders.getTop():ctPageBorders.addNewTop();
+		   if (b == 1) ctBorder = (ctPageBorders.isSetBottom())?ctPageBorders.getBottom():ctPageBorders.addNewBottom();
+		   else if (b == 2) ctBorder = (ctPageBorders.isSetLeft())?ctPageBorders.getLeft():ctPageBorders.addNewLeft();
+		   else if (b == 3) ctBorder = (ctPageBorders.isSetRight())?ctPageBorders.getRight():ctPageBorders.addNewRight();
+		  // ctBorder.setVal(STBorder.OUTSET);
+		   //ctBorder.setVal(STBorder.SINGLE);
+		   ctBorder.setVal(STBorder.THICK);
+		   ctBorder.setSz(java.math.BigInteger.valueOf(10));
+		   ctBorder.setSpace(java.math.BigInteger.valueOf(200));
+		   ctBorder.setColor("000000");
+	}
+	}
+
+
+	
+
+	public void createTOC(String title) {
+		// create a new paragraph and set title to it
+	               XWPFParagraph tocPara = this.document.createParagraph();
+	               
+	               XWPFRun TOCRun = tocPara.createRun();
+	       		 
+	               TOCRun.setFontSize(18);
+	               TOCRun.setColor("0C184C");	              
+	               TOCRun.setText(title);
+	              	     CTP ctP = tocPara.getCTP();
+	            CTSimpleField toc = ctP.addNewFldSimple();
+	            
+	            toc.setInstr("TOC \\h");
+	            toc.setDirty(STOnOff.TRUE);
+
+	}
+
+	public void addCustomHeadingStyle(String styleId, int headingLevel ) {
+
+    CTStyle ctStyle = CTStyle.Factory.newInstance();
+    ctStyle.setStyleId(styleId);
+
+    CTString styleName = CTString.Factory.newInstance();
+    styleName.setVal(styleId);
+    ctStyle.setName(styleName);
+
+    CTDecimalNumber indentNumber = CTDecimalNumber.Factory.newInstance();
+    indentNumber.setVal(BigInteger.valueOf(headingLevel));
+
+    // lower number > style is more prominent in the formats bar
+    ctStyle.setUiPriority(indentNumber);
+
+    CTOnOff onoffnull = CTOnOff.Factory.newInstance();
+    ctStyle.setUnhideWhenUsed(onoffnull);
+
+    // style shows up in the formats bar
+    ctStyle.setQFormat(onoffnull);
+
+    // style defines a heading of the given level
+    CTPPr ppr = CTPPr.Factory.newInstance();
+    ppr.setOutlineLvl(indentNumber);
+    ctStyle.setPPr(ppr);
+
+    XWPFStyle style = new XWPFStyle(ctStyle);
+
+    // is a null op if already defined
+    XWPFStyles styles = this.document.createStyles();
+
+    style.setType(STStyleType.PARAGRAPH);
+    styles.addStyle(style);
+
+}
+
+
 }

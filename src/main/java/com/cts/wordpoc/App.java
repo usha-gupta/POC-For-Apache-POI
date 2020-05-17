@@ -31,16 +31,37 @@ public class App
 		
 			try {
 				XWPFDocument doc = wordUtil.create();
-				wordUtil.addTitle("My Title", 16, ParagraphAlignment.CENTER); 
-				wordUtil.addParagraph("This is my default size paragraph"); 
-				wordUtil.addParagraph("This is my large font size paragraph", 14);				
+				
+				String headingId  = "heading1";
+				String subHeadingId = "heading2";
+				
+				wordUtil.addCustomHeadingStyle(headingId, 1);
+				wordUtil.addCustomHeadingStyle(subHeadingId,2);
+				
+				wordUtil.addTitle("This is my title", 16, ParagraphAlignment.CENTER,headingId );				
+				wordUtil.addParagraph("This is my paragraph for heading one");
+				
+				
+				 wordUtil.addTitle("This is my second title--2",16,ParagraphAlignment.LEFT,headingId);
+				 wordUtil.addParagraph("This is my paragraph for second for heading----2");
+				 
+				 
+				wordUtil.addTitle("this is sub heading for heading 2", 14,ParagraphAlignment.LEFT,subHeadingId);
+				wordUtil.addParagraph("This is my paragraph for subheading for paragph 2");
+
+				
+				
+//				wordUtil.addParagraph("This is my default size paragraph"); 
+//				wordUtil.addParagraph("This is my large font size paragraph", 14);				
 				LocalDate currentDate = LocalDate.now();
 //				wordUtil.addHeader("This is my header....");
 //				wordUtil.addFooter("This is my footer");				
-				XWPFTable table = wordUtil.addTable(tableHeaders, "4d82be");
-				wordUtil.addRows(table, tableData, "dbe5f1", "feffff");
-				XWPFTableCell innerCell = table.getRow(2).getCell(2); 
-				wordUtil.addNestedTable(innerCell,innerTableData);				
+//				XWPFTable table = wordUtil.addTable(tableHeaders, "4d82be");
+//				wordUtil.addRows(table, tableData, "dbe5f1", "feffff");
+//				XWPFTableCell innerCell = table.getRow(2).getCell(2); 
+//				wordUtil.addNestedTable(innerCell,innerTableData);	
+				wordUtil.pageBorder();
+				//wordUtil.tableContent();
 				wordUtil.save("my_test_doc_" + currentDate);
 				
 			} catch (IOException e ) {
