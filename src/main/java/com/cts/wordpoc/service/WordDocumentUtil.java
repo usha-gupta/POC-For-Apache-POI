@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashMap;
 
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.TableRowAlign;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFNumbering;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFStyle;
@@ -16,6 +19,7 @@ import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell.XWPFVertAlign;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.apache.xmlbeans.StringEnumAbstractBase.Table;
 import org.apache.xmlbeans.XmlException;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBorder;
@@ -25,6 +29,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTOnOff;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageBorders;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageMar;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPageSz;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSectPr;
@@ -32,28 +37,34 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSimpleField;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTString;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTStyle;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTbl;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTTblWidth;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTText;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STBorder;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STOnOff;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageBorderOffset;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STStyleType;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 
-public class WordDocumentUtil {
+public class WordDocumentUtil {	
 	
-	
+	public static final String AUTO_FIT_WINDOW = "AUTO_FIT_WINDOW";
 	private XWPFDocument document; 
 	private XWPFHeaderFooterPolicy policy; 
+	private BigInteger numId;
+	public HashMap<String,BigInteger> headlingLevelMap = new HashMap<String,BigInteger>();    
 		
 	public XWPFDocument create() throws IOException, XmlException { 
 		//Create document
 		this.document = new XWPFDocument(); 		
 		CTSectPr sectPr = this.document.getDocument().getBody().addNewSectPr();
 		this.policy = new XWPFHeaderFooterPolicy(this.document, sectPr);
-		this.document.getBodyElements();
-		createTOC("Table Of Contents");		
+		this.document.getBodyElements();			
+		XWPFNumbering numbering = this.document.createNumbering();
+		BigInteger id = new BigInteger("1");
+		this.numId = numbering.addNum(id);
+		createTOC("Table Of Contents");	
 		return this.document;
 	}
-	
 	
 	public void save(String fileName) throws IOException { 
 		//save document
@@ -62,21 +73,26 @@ public class WordDocumentUtil {
 		out.close();
 	}
 		
-		
 	public void addTitle(String title, int fontSize, ParagraphAlignment alignment, String styleId) {
 		//for Title
 		XWPFParagraph paragraphTitle = this.document.createParagraph();
-		paragraphTitle.setPageBreak(true);
+		//paragraphTitle.setPageBreak(true);
 		XWPFRun titleRun = paragraphTitle.createRun();
 		paragraphTitle.setAlignment(alignment);	  
 		titleRun.setText(title);
 		titleRun.setFontSize(fontSize);
 		titleRun.setBold(true);		
+		if(styleId == "heading1") {
+			addCustomHeadingStyle(styleId,1);			
+		}
+		else {
+			addCustomHeadingStyle(styleId,2);
+		}		
 		paragraphTitle.setStyle(styleId);
-		
+		paragraphTitle.setNumID(this.numId);		
+		paragraphTitle.setNumILvl(headlingLevelMap.get(styleId));		
 	}
-		
-		
+			
 	public void addParagraph(String content, int fontSize) {			
 		//write body content
 		//titlePoint.addBreak();  //for line break
@@ -84,15 +100,13 @@ public class WordDocumentUtil {
 		paragraphContent.setAlignment(ParagraphAlignment.BOTH);
 		XWPFRun paragraphRun = paragraphContent.createRun();
 		paragraphRun.setFontSize(fontSize);
-		paragraphRun.setText(content);
-		
+		paragraphRun.setText(content);		
 	}
 		
 	public void addParagraph(String content) {
 		  addParagraph(content, 12);
 	 }
-		
-		
+			
 	public void addHeader(String header) throws IOException { 
 		// here you will create header 			
 		CTP ctpHeader = CTP.Factory.newInstance();
@@ -104,8 +118,7 @@ public class WordDocumentUtil {
 	    parsHeader[0] = headerParagraph;
 	    this.policy.createHeader(XWPFHeaderFooterPolicy.DEFAULT, parsHeader);
 	}
-		
-
+	
 	public void addFooter(String footer) throws IOException {
 		//write footer content
 		CTP ctpFooter = CTP.Factory.newInstance();
@@ -118,15 +131,16 @@ public class WordDocumentUtil {
 		this.policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT, parsFooter);			
 	}
 
-
-	public XWPFTable addTable(String[] headers, String headerColor){
+	public XWPFTable addTable(String[] headers, String headerColor, String autoFitWindow){
 		// Create a Simple Table using the document.
 		XWPFTable table = this.document.createTable();	
 		//table.getCTTbl().getTblPr().unsetTblBorders();
-		table.setCellMargins(50, 150, 50, 150);		
+		if(autoFitWindow == "AUTO_FIT_WINDOW") {
+			table.setWidth("100%");
+		}
+		table.setTableAlignment(TableRowAlign.CENTER);
 		XWPFTableRow headerRow = table.getRow(0);
 		XWPFTableCell headerCell;	
-		
 		for(int i = 0; i< headers.length; i++) {
 			if (i == 0) {
 				headerCell = headerRow.getCell(0);
@@ -141,14 +155,16 @@ public class WordDocumentUtil {
 			headerContentRun.setColor("ffffff");
 			headerContentRun.setText(headers[i]);
 			headerContentRun.isBold();
-			headerCell.setColor(headerColor);					
+			headerCell.setColor(headerColor);		
 		}		
 		return table;
 	}
 	
+	public XWPFTable  addTable(String[] headers, String headerColor) {
+		return addTable(headers,headerColor,"null");
+	}
 	
-	public void addRows(XWPFTable table, String[][] tableData, String oddRowColor, String evenRowColor) {
-	
+	public void addRows(XWPFTable table, String[][] tableData, String oddRowColor, String evenRowColor) {	
 		for(int i = 0; i<tableData.length; i++) {
 			XWPFTableRow tableRow = table.createRow();			
 			for(int j = 0; j<tableData[0].length; j++) {
@@ -161,7 +177,6 @@ public class WordDocumentUtil {
 		    }	
 		}
 	}
-	
 	
 	public void addNestedTable(XWPFTableCell cell,String[][] tableData) {		
 		CTTbl  ctTbl = cell.getCTTc().addNewTbl();
@@ -214,7 +229,6 @@ public class WordDocumentUtil {
 			ctBorder.setColor("000000");
 		}
 	}
-
 	
 	public void createTOC(String title) {
 		// create a new paragraph and set title to it
@@ -227,6 +241,7 @@ public class WordDocumentUtil {
 	    CTSimpleField toc = ctP.addNewFldSimple();
 	    toc.setInstr("TOC \\h");
 	    toc.setDirty(STOnOff.TRUE);
+	    tocPara.setPageBreak(true);
 	}
 
 	public void addCustomHeadingStyle(String styleId, int headingLevel ) {
@@ -260,7 +275,8 @@ public class WordDocumentUtil {
 
 	    style.setType(STStyleType.PARAGRAPH);
 	    styles.addStyle(style);
+	    
+	    headlingLevelMap.put(styleId,new BigInteger(String.valueOf(headingLevel)));
+	    
 	}
-
-
 }
