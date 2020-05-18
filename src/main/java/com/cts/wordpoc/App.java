@@ -11,10 +11,6 @@ import org.apache.xmlbeans.XmlException;
 
 import com.cts.wordpoc.service.WordDocumentUtil;
 
-/**
- * Hello world!
- *
- */
 public class App 
 {
     public static void main( String[] args )
@@ -48,7 +44,6 @@ public class App
 				 
 				wordUtil.addTitle("this is sub heading for heading 2", 14,ParagraphAlignment.LEFT,subHeadingId);
 				wordUtil.addParagraph("This is my paragraph for subheading for paragph 2");
-
 				
 				
 //				wordUtil.addParagraph("This is my default size paragraph"); 
