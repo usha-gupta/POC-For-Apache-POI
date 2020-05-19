@@ -9,6 +9,7 @@ import java.util.HashMap;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TableRowAlign;
+import org.apache.poi.xwpf.usermodel.XWPFAbstractNum;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFNumbering;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -21,10 +22,12 @@ import org.apache.poi.xwpf.usermodel.XWPFTableCell.XWPFVertAlign;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.apache.xmlbeans.StringEnumAbstractBase.Table;
 import org.apache.xmlbeans.XmlException;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTAbstractNum;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBody;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBorder;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDecimalNumber;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTDocument1;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTNumbering;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTOnOff;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTP;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTPPr;
@@ -45,8 +48,15 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageBorderOffset
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STStyleType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 
-public class WordDocumentUtil {	
+public class DocumentBuilder {		
 	
+	static String cTAbstractNumDecimalXML = 
+			  "<w:abstractNum xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" w:abstractNumId=\"1\">"
+			+ "<w:multiLevelType w:val=\"hybridMultilevel\"/>"
+			+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl>"
+			+ "<w:lvl w:ilvl=\"1\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.%2\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"1440\" w:hanging=\"360\"/></w:pPr></w:lvl>"
+			+ "<w:lvl w:ilvl=\"2\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.%2.%3\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"2160\" w:hanging=\"360\"/></w:pPr></w:lvl>"
+			+ "</w:abstractNum>";
 	public static final String AUTO_FIT_WINDOW = "AUTO_FIT_WINDOW";
 	private XWPFDocument document; 
 	private XWPFHeaderFooterPolicy policy; 
@@ -58,10 +68,14 @@ public class WordDocumentUtil {
 		this.document = new XWPFDocument(); 		
 		CTSectPr sectPr = this.document.getDocument().getBody().addNewSectPr();
 		this.policy = new XWPFHeaderFooterPolicy(this.document, sectPr);
-		this.document.getBodyElements();			
+		this.document.getBodyElements();		
+		CTNumbering cTNumbering = CTNumbering.Factory.parse(cTAbstractNumDecimalXML);
+		CTAbstractNum cTAbstractNum = cTNumbering.getAbstractNumArray(0);
+		XWPFAbstractNum abstractNum1 = new XWPFAbstractNum(cTAbstractNum);			
 		XWPFNumbering numbering = this.document.createNumbering();
-		BigInteger id = new BigInteger("1");
-		this.numId = numbering.addNum(id);
+		BigInteger id = new BigInteger("1");		
+		BigInteger abstractNumID = numbering.addAbstractNum(abstractNum1);
+		this.numId = numbering.addNum(abstractNumID);
 		createTOC("Table Of Contents");	
 		return this.document;
 	}
@@ -82,12 +96,6 @@ public class WordDocumentUtil {
 		titleRun.setText(title);
 		titleRun.setFontSize(fontSize);
 		titleRun.setBold(true);		
-		if(styleId == "heading1") {
-			addCustomHeadingStyle(styleId,1);			
-		}
-		else {
-			addCustomHeadingStyle(styleId,2);
-		}		
 		paragraphTitle.setStyle(styleId);
 		paragraphTitle.setNumID(this.numId);		
 		paragraphTitle.setNumILvl(headlingLevelMap.get(styleId));		
@@ -216,8 +224,7 @@ public class WordDocumentUtil {
 		  
 		//page borders
 		CTPageBorders ctPageBorders = (ctSectPr.isSetPgBorders())?ctSectPr.getPgBorders():ctSectPr.addNewPgBorders();
-		//ctPageBorders.setOffsetFrom(STPageBorderOffset.PAGE);
-		  
+		//ctPageBorders.setOffsetFrom(STPageBorderOffset.PAGE);		  
 		for (int b = 0; b < 4; b++) {
 			CTBorder ctBorder = (ctPageBorders.isSetTop())?ctPageBorders.getTop():ctPageBorders.addNewTop();
 			if (b == 1) ctBorder = (ctPageBorders.isSetBottom())?ctPageBorders.getBottom():ctPageBorders.addNewBottom();
@@ -248,7 +255,6 @@ public class WordDocumentUtil {
 		
 		CTStyle ctStyle = CTStyle.Factory.newInstance();
 		ctStyle.setStyleId(styleId);
-
 	    CTString styleName = CTString.Factory.newInstance();
 	    styleName.setVal(styleId);
 	    ctStyle.setName(styleName);	
@@ -276,7 +282,6 @@ public class WordDocumentUtil {
 	    style.setType(STStyleType.PARAGRAPH);
 	    styles.addStyle(style);
 	    
-	    headlingLevelMap.put(styleId,new BigInteger(String.valueOf(headingLevel)));
-	    
+	    headlingLevelMap.put(styleId, BigInteger.valueOf(headingLevel));	    
 	}
 }
