@@ -3,11 +3,20 @@ package com.cts.wordpoc;
 import java.io.IOException;
 import java.time.LocalDate;
 
+import org.apache.poi.xwpf.usermodel.Borders;
+import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+import org.apache.poi.xwpf.usermodel.TableRowAlign;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType;
+import org.apache.poi.xwpf.usermodel.XWPFTableCell.XWPFVertAlign;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
+import org.apache.poi.xwpf.usermodel.XWPFTableRow;
 import org.apache.xmlbeans.XmlException;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR;
 
 import com.cts.wordpoc.service.DocumentBuilder;
 
@@ -17,6 +26,7 @@ public class App
     {
     	System.out.println("hello");
         String[] tableHeaders = {"Name", "Role", "Company","Position"};
+        String[] testingHeader= {"DocumentBuilder.AUTO_FIT_WINDOW"};
         String[][] tableData = { {"Hardware Kent", "Senior Network Architect", "NRT","Manager"}, 
         								{"Alex Adshead", "Senior Network Supporting Engineer", "","Manager"}, 
         								{"Amit Gautam",  "Releases Manager", "Cognizant ","Manager"}, 
@@ -44,40 +54,51 @@ public class App
 				builder.addCustomHeadingStyle(level2Heading, 2);
 				builder.addCustomHeadingStyle(level3Heading, 3);
 				
-				
-				builder.addTitle("Lorem Ipsum", 16, ParagraphAlignment.LEFT,headingId ); 
-				builder.addParagraph(heading1); 
 
+                
+                builder.addTitle("NRT CRAMER R2F Drop 2003.C", 22, ParagraphAlignment.LEFT, DocumentBuilder.HEADING_BOTTOM_BORDER);
+                builder.addTitle("Method of Procedure", 22, ParagraphAlignment.LEFT, DocumentBuilder.HEADING_BOTTOM_BORDER);
+		
+//				
+//				XWPFParagraph para1 = builder.addParagraph(heading1); 
+//				para1.setBorderBottom(Borders.SINGLE);
+//				
+//				XWPFParagraph para2 = builder.addParagraph(heading2, 14);	 
+//				para2.setBorderBottom(Borders.BASIC_THIN_LINES);
+//				
+//				builder.addTitle("Lorem Ipsum", 16, ParagraphAlignment.LEFT,headingId); 
+//				builder.addParagraph(heading1); 
 
-				builder.addTitle("LOREM IPSUM GENERATOR", 16, ParagraphAlignment.LEFT, headingId);
-				builder.addParagraph(heading2, 14);		
-
-				builder.addTitle("INTERPRETING NONSENSE", 16, ParagraphAlignment.LEFT, subHeadingId);
-				builder.addParagraph(subheading1, 14);	
-
-				builder.addTitle("Boparai's version:", 16, ParagraphAlignment.LEFT, subHeadingId);
-				builder.addParagraph(subheading2, 14);
-				
-				builder.addTitle("GENERATOR:", 14, ParagraphAlignment.LEFT, level2Heading);
-				builder.addParagraph(subheading2, 14);
-				
-				builder.addTitle("Variations", 16, ParagraphAlignment.LEFT, headingId);
-				builder.addParagraph(heading3, 14);		
-
-				builder.addTitle(" invented Lorem Ipsum", 16, ParagraphAlignment.LEFT, subHeadingId);
-				builder.addParagraph(subheading3, 14);				
-				
+//
+//				builder.addTitle("LOREM IPSUM GENERATOR", 16, ParagraphAlignment.LEFT, headingId);
+//				builder.addParagraph(heading2, 14);		
+//
+//				builder.addTitle("INTERPRETING NONSENSE", 16, ParagraphAlignment.LEFT, subHeadingId);
+//				builder.addParagraph(subheading1, 14);	
+//
+//				builder.addTitle("Boparai's version:", 16, ParagraphAlignment.LEFT, subHeadingId);
+//				builder.addParagraph(subheading2, 14);
+//				
+//				builder.addTitle("GENERATOR:", 14, ParagraphAlignment.LEFT, level2Heading);
+//				builder.addParagraph(subheading2, 14);
+//				
+//				builder.addTitle("Variations", 16, ParagraphAlignment.LEFT, headingId);
+//				builder.addParagraph(heading3, 14);		
+//
+//				builder.addTitle(" invented Lorem Ipsum", 16, ParagraphAlignment.LEFT, subHeadingId);
+//				builder.addParagraph(subheading3, 14);				
+//				
 //				wordUtil.addParagraph("This is my default size paragraph"); 
 //				wordUtil.addParagraph("This is my large font size paragraph", 14);				
 				LocalDate currentDate = LocalDate.now();
 //				wordUtil.addHeader("This is my header....");
 //				wordUtil.addFooter("This is my footer");				
-				XWPFTable table = builder.addTable(tableHeaders, "4d82be",DocumentBuilder.AUTO_FIT_WINDOW);
-				//XWPFTable table = wordUtil.addTable(tableHeaders, "4d82be");
-				builder.addRows(table, tableData, "dbe5f1", "feffff");
+//				XWPFTable table = builder.addTable(tableHeaders, "4d82be",DocumentBuilder.AUTO_FIT_WINDOW);
+//				XWPFTable table = builder.addTable(tableHeaders, "4d82be");
+//				builder.addRows(table, tableData, "dbe5f1", "feffff");
 //				XWPFTableCell innerCell = table.getRow(2).getCell(2); 
 //				wordUtil.addNestedTable(innerCell,innerTableData);	
-				builder.pageBorder();
+//				builder.pageBorder();
 				builder.save("my_test_doc_" + currentDate);
 				
 			} catch (IOException e ) {

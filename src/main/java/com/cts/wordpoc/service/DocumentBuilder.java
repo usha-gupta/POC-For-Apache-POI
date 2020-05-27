@@ -6,7 +6,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
 
+import javax.swing.text.Style;
+
+import org.apache.poi.hssf.usermodel.HSSFPatriarch;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
+import org.apache.poi.xwpf.usermodel.Borders;
+import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.TableRowAlign;
 import org.apache.poi.xwpf.usermodel.XWPFAbstractNum;
@@ -17,6 +22,7 @@ import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFStyle;
 import org.apache.poi.xwpf.usermodel.XWPFStyles;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
+import org.apache.poi.xwpf.usermodel.XWPFTable.XWPFBorderType;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell.XWPFVertAlign;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
@@ -48,15 +54,17 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageBorderOffset
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STStyleType;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth;
 
-public class DocumentBuilder {		
+public class DocumentBuilder {	
 	
-	static String cTAbstractNumDecimalXML = 
+	static String cTAbstractNumDecimalXML =
 			  "<w:abstractNum xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" w:abstractNumId=\"1\">"
 			+ "<w:multiLevelType w:val=\"hybridMultilevel\"/>"
-			+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl>"
-			+ "<w:lvl w:ilvl=\"1\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.%2\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"1440\" w:hanging=\"360\"/></w:pPr></w:lvl>"
-			+ "<w:lvl w:ilvl=\"2\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.%2.%3\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"2160\" w:hanging=\"360\"/></w:pPr></w:lvl>"
+			+ "<w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr><w:rPr><w:rFonts w:hint=\"default\"/><w:color w:val=\"FF0000\" w:themeColor=\"accent2\"/></w:rPr></w:lvl>"
+			+ "<w:lvl w:ilvl=\"1\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.%2\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"1440\" w:hanging=\"360\"/></w:pPr><w:rPr><w:rFonts w:hint=\"default\"/><w:color w:val=\"FF0000\" w:themeColor=\"accent2\"/></w:rPr></w:lvl>"
+			+ "<w:lvl w:ilvl=\"2\" w:tentative=\"1\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.%2.%3\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"2160\" w:hanging=\"360\"/></w:pPr><w:rPr><w:rFonts w:hint=\"default\"/><w:color w:val=\"FF0000\" w:themeColor=\"accent2\"/></w:rPr></w:lvl>"
 			+ "</w:abstractNum>";
+	private Borders currentBorderStyle;
+	public static final String HEADING_BOTTOM_BORDER = "HEADING_BOTTOM_BORDER";
 	public static final String AUTO_FIT_WINDOW = "AUTO_FIT_WINDOW";
 	private XWPFDocument document; 
 	private XWPFHeaderFooterPolicy policy; 
@@ -68,14 +76,14 @@ public class DocumentBuilder {
 		this.document = new XWPFDocument(); 		
 		CTSectPr sectPr = this.document.getDocument().getBody().addNewSectPr();
 		this.policy = new XWPFHeaderFooterPolicy(this.document, sectPr);
-		this.document.getBodyElements();		
+		this.document.getBodyElements();	
+		this.currentBorderStyle = Borders.SINGLE;
 		CTNumbering cTNumbering = CTNumbering.Factory.parse(cTAbstractNumDecimalXML);
 		CTAbstractNum cTAbstractNum = cTNumbering.getAbstractNumArray(0);
 		XWPFAbstractNum abstractNum1 = new XWPFAbstractNum(cTAbstractNum);			
-		XWPFNumbering numbering = this.document.createNumbering();
-		BigInteger id = new BigInteger("1");		
+		XWPFNumbering numbering = this.document.createNumbering();				
 		BigInteger abstractNumID = numbering.addAbstractNum(abstractNum1);
-		this.numId = numbering.addNum(abstractNumID);
+		this.numId = numbering.addNum(abstractNumID);		
 		createTOC("Table Of Contents");	
 		return this.document;
 	}
@@ -87,21 +95,45 @@ public class DocumentBuilder {
 		out.close();
 	}
 		
-	public void addTitle(String title, int fontSize, ParagraphAlignment alignment, String styleId) {
-		//for Title
-		XWPFParagraph paragraphTitle = this.document.createParagraph();
-		//paragraphTitle.setPageBreak(true);
-		XWPFRun titleRun = paragraphTitle.createRun();
-		paragraphTitle.setAlignment(alignment);	  
-		titleRun.setText(title);
-		titleRun.setFontSize(fontSize);
-		titleRun.setBold(true);		
-		paragraphTitle.setStyle(styleId);
-		paragraphTitle.setNumID(this.numId);		
-		paragraphTitle.setNumILvl(headlingLevelMap.get(styleId));		
-	}
-			
-	public void addParagraph(String content, int fontSize) {			
+	public XWPFParagraph addTitle(String title, int fontSize, ParagraphAlignment alignment, String styleId) {
+        XWPFParagraph paragraphTitle = null;
+        if (styleId.equals(HEADING_BOTTOM_BORDER)) {
+            XWPFTable table = this.document.createTable();
+            XWPFTableRow row = table.getRow(0);
+            XWPFTableCell cell = row.getCell(0);
+            XWPFParagraph content = cell.getParagraphs().get(0);
+            content.setAlignment(ParagraphAlignment.LEFT);
+            cell.setVerticalAlignment(XWPFVertAlign.CENTER);
+            XWPFRun contentRun = content.createRun();
+            contentRun.setText(title);
+            contentRun.setColor("0c194e");
+            contentRun.setFontSize(fontSize);
+            contentRun.setBold(false);
+            table.setWidth("100%");
+            table.getCTTbl().getTblPr().unsetTblBorders();
+            table.setBottomBorder(XWPFBorderType.SINGLE, 10, 0, "3980f6");
+            XWPFParagraph p = this.document.createParagraph();
+            XWPFRun r = p.createRun();
+            r.setText(" ");
+            r.setFontSize(5);
+        }
+        else {
+            //for Title
+            paragraphTitle = this.document.createParagraph();
+            //paragraphTitle.setPageBreak(true);
+            XWPFRun titleRun = paragraphTitle.createRun();
+            paragraphTitle.setAlignment(alignment);
+            titleRun.setFontSize(fontSize);
+            titleRun.setBold(true);
+            titleRun.setText(title);
+            paragraphTitle.setStyle(styleId);
+            paragraphTitle.setNumID(this.numId);
+            paragraphTitle.setNumILvl(headlingLevelMap.get(styleId));
+        }
+        return paragraphTitle;
+    }
+	
+	public XWPFParagraph addParagraph(String content, int fontSize) {			
 		//write body content
 		//titlePoint.addBreak();  //for line break
 		XWPFParagraph paragraphContent = this.document.createParagraph();
@@ -109,10 +141,12 @@ public class DocumentBuilder {
 		XWPFRun paragraphRun = paragraphContent.createRun();
 		paragraphRun.setFontSize(fontSize);
 		paragraphRun.setText(content);		
+		return paragraphContent;
 	}
 		
-	public void addParagraph(String content) {
-		  addParagraph(content, 12);
+	public XWPFParagraph addParagraph(String content) {
+		  return addParagraph(content, 12);
+		  
 	 }
 			
 	public void addHeader(String header) throws IOException { 
@@ -124,7 +158,7 @@ public class DocumentBuilder {
 		XWPFParagraph headerParagraph = new XWPFParagraph(ctpHeader, this.document);
 	    XWPFParagraph[] parsHeader = new XWPFParagraph[1];
 	    parsHeader[0] = headerParagraph;
-	    this.policy.createHeader(XWPFHeaderFooterPolicy.DEFAULT, parsHeader);
+	    this.policy.createHeader(XWPFHeaderFooterPolicy.DEFAULT, parsHeader);	    
 	}
 	
 	public void addFooter(String footer) throws IOException {
@@ -136,7 +170,8 @@ public class DocumentBuilder {
 		XWPFParagraph footerParagraph = new XWPFParagraph(ctpFooter, this.document);
 		XWPFParagraph[] parsFooter = new XWPFParagraph[1];
 		parsFooter[0] = footerParagraph;
-		this.policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT, parsFooter);			
+		this.policy.createFooter(XWPFHeaderFooterPolicy.DEFAULT, parsFooter);	
+		
 	}
 
 	public XWPFTable addTable(String[] headers, String headerColor, String autoFitWindow){
@@ -146,6 +181,7 @@ public class DocumentBuilder {
 		if(autoFitWindow == "AUTO_FIT_WINDOW") {
 			table.setWidth("100%");
 		}
+		
 		table.setTableAlignment(TableRowAlign.CENTER);
 		XWPFTableRow headerRow = table.getRow(0);
 		XWPFTableCell headerCell;	
@@ -163,6 +199,7 @@ public class DocumentBuilder {
 			headerContentRun.setColor("ffffff");
 			headerContentRun.setText(headers[i]);
 			headerContentRun.isBold();
+			//headerContentRun.setFontSize(size);
 			headerCell.setColor(headerColor);		
 		}		
 		return table;
@@ -186,7 +223,7 @@ public class DocumentBuilder {
 		}
 	}
 	
-	public void addNestedTable(XWPFTableCell cell,String[][] tableData) {		
+	public XWPFTable addNestedTable(XWPFTableCell cell,String[][] tableData) {		
 		CTTbl  ctTbl = cell.getCTTc().addNewTbl();
 		cell.getCTTc().addNewP();
 		XWPFTable innerTable = new XWPFTable(ctTbl, cell);
@@ -210,7 +247,8 @@ public class DocumentBuilder {
 				}
 				innerTableColum.setText(tableData[i][j]);
 			}
-		}		
+		}	
+		return innerTable;
 	}
 
 	public void pageBorder() {
@@ -251,13 +289,14 @@ public class DocumentBuilder {
 	    tocPara.setPageBreak(true);
 	}
 
-	public void addCustomHeadingStyle(String styleId, int headingLevel ) {
+	public XWPFStyle addCustomHeadingStyle(String styleId, int headingLevel ) {
 		
 		CTStyle ctStyle = CTStyle.Factory.newInstance();
 		ctStyle.setStyleId(styleId);
 	    CTString styleName = CTString.Factory.newInstance();
 	    styleName.setVal(styleId);
 	    ctStyle.setName(styleName);	
+	    
 	    CTDecimalNumber indentNumber = CTDecimalNumber.Factory.newInstance();
 	    indentNumber.setVal(BigInteger.valueOf(headingLevel));
 	
@@ -278,10 +317,14 @@ public class DocumentBuilder {
 	
 	    // is a null op if already defined
 	    XWPFStyles styles = this.document.createStyles();
+	    
 
 	    style.setType(STStyleType.PARAGRAPH);
 	    styles.addStyle(style);
 	    
 	    headlingLevelMap.put(styleId, BigInteger.valueOf(headingLevel));	    
+	    return style;
 	}
+
+
 }
